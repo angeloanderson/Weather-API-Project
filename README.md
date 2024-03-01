@@ -1,3 +1,3 @@
 # Weather-API-Project
 Weather API Project
-![image](https://github.com/angeloanderson/Weather-API-Project/assets/58998210/863d0a6b-099b-47fe-ac42-575b19693b5c)
+![image](https://github.com/angeloanderson/Weather-API-Project/assets/58998210/67b4f3cd-1574-4d10-bf71-415f844aa10f)
