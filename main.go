@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,13 +10,19 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func main() {
-	// Coordinates for Memphis, TN
-	latitude := "35.1495"
-	longitude := "-90.0490"
+type WeatherResponse struct {
+	Properties struct {
+		Periods []struct {
+			Temperature   interface{} `json:"temperature"`
+			WindSpeed     string      `json:"windSpeed"`
+			ShortForecast string      `json:"shortForecast"`
+		} `json:"periods"`
+	} `json:"properties"`
+}
 
+func main() {
 	// Make a GET request to the National Weather Service API for Memphis coordinates
-	url := fmt.Sprintf("https://api.weather.gov/points/%s,%s", latitude, longitude)
+	url := "https://api.weather.gov/gridpoints/MEG/42,67/forecast"
 	response, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -30,8 +37,24 @@ func main() {
 		return
 	}
 
-	// Print the response body
-	fmt.Println("Weather Data:", string(body))
+	// Unmarshal JSON response
+	var weatherResp WeatherResponse
+	err = json.Unmarshal(body, &weatherResp)
+	if err != nil {
+		fmt.Println("Error unmarshalling JSON:", err)
+		return
+	}
+
+	// Extract current weather data
+	if len(weatherResp.Properties.Periods) > 0 {
+		currentWeather := weatherResp.Properties.Periods[0]
+		fmt.Println("Temperature:", currentWeather.Temperature)
+		fmt.Println("Wind Speed:", currentWeather.WindSpeed)
+		fmt.Println("Forecast:", currentWeather.ShortForecast)
+	} else {
+		fmt.Println("No weather data available")
+		return
+	}
 
 	// Connect to Redis
 	rdb := redis.NewClient(&redis.Options{
